@@ -8,3 +8,5 @@ target/
 .sonar4clipse
 *.sonar4clipseExternals
 .DS_Store
+/.apt_generated/
+/.apt_generated_tests/

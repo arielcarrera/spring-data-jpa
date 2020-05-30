@@ -30,6 +30,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Mark Paluch
+ * @author Ariel Carrera
  */
 final class SimpleJpaQuery extends AbstractStringBasedJpaQuery {
 
@@ -43,7 +44,23 @@ final class SimpleJpaQuery extends AbstractStringBasedJpaQuery {
 	 */
 	public SimpleJpaQuery(JpaQueryMethod method, EntityManager em,
 			QueryMethodEvaluationContextProvider evaluationContextProvider, SpelExpressionParser parser) {
-		this(method, em, method.getRequiredAnnotatedQuery(), evaluationContextProvider, parser);
+	    
+		this(method, em, null, method.getRequiredAnnotatedQuery(), evaluationContextProvider, parser);
+	}
+	
+	/**
+	 * Creates a new {@link SimpleJpaQuery} encapsulating the query annotated on the given {@link JpaQueryMethod}.
+	 *
+	 * @param method must not be {@literal null}
+	 * @param em must not be {@literal null}
+	 * @param emCreation if is null uses em
+	 * @param evaluationContextProvider must not be {@literal null}
+	 * @param parser must not be {@literal null}
+	 */
+	public SimpleJpaQuery(JpaQueryMethod method, EntityManager em, EntityManager emCreation,
+			QueryMethodEvaluationContextProvider evaluationContextProvider, SpelExpressionParser parser) {
+	    
+		this(method, em, emCreation, method.getRequiredAnnotatedQuery(), evaluationContextProvider, parser);
 	}
 
 	/**
@@ -57,8 +74,24 @@ final class SimpleJpaQuery extends AbstractStringBasedJpaQuery {
 	 */
 	public SimpleJpaQuery(JpaQueryMethod method, EntityManager em, String queryString,
 			QueryMethodEvaluationContextProvider evaluationContextProvider, SpelExpressionParser parser) {
+	    
+	    	this(method, em, null, queryString, evaluationContextProvider, parser);
+	}
+	
+	/**
+	 * Creates a new {@link SimpleJpaQuery} that encapsulates a simple query string.
+	 *
+	 * @param method must not be {@literal null}
+	 * @param em must not be {@literal null}
+	 * @param emCreation if is null uses em
+	 * @param queryString must not be {@literal null} or empty
+	 * @param evaluationContextProvider must not be {@literal null}
+	 * @param parser must not be {@literal null}
+	 */
+	public SimpleJpaQuery(JpaQueryMethod method, EntityManager em, EntityManager emCreation, String queryString,
+			QueryMethodEvaluationContextProvider evaluationContextProvider, SpelExpressionParser parser) {
 
-		super(method, em, queryString, evaluationContextProvider, parser);
+		super(method, em, emCreation, queryString, evaluationContextProvider, parser);
 
 		validateQuery(getQuery().getQueryString(), "Validation failed for query for method %s!", method);
 
@@ -83,7 +116,7 @@ final class SimpleJpaQuery extends AbstractStringBasedJpaQuery {
 		EntityManager validatingEm = null;
 
 		try {
-			validatingEm = getEntityManager().getEntityManagerFactory().createEntityManager();
+			validatingEm = getEntityManagerCreation().getEntityManagerFactory().createEntityManager();
 			validatingEm.createQuery(query);
 
 		} catch (RuntimeException e) {

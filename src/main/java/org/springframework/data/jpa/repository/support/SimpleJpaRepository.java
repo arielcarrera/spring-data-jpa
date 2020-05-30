@@ -15,7 +15,11 @@
  */
 package org.springframework.data.jpa.repository.support;
 
-import static org.springframework.data.jpa.repository.query.QueryUtils.*;
+import static org.springframework.data.jpa.repository.query.QueryUtils.COUNT_QUERY_STRING;
+import static org.springframework.data.jpa.repository.query.QueryUtils.DELETE_ALL_QUERY_STRING;
+import static org.springframework.data.jpa.repository.query.QueryUtils.applyAndBind;
+import static org.springframework.data.jpa.repository.query.QueryUtils.getQueryString;
+import static org.springframework.data.jpa.repository.query.QueryUtils.toOrders;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -72,6 +76,7 @@ import org.springframework.util.Assert;
  * @author Jens Schauder
  * @author David Madden
  * @author Moritz Becker
+ * @author Ariel Carrera
  * @param <T> the type of the entity to handle
  * @param <ID> the type of the entity's identifier
  */
@@ -108,13 +113,24 @@ public class SimpleJpaRepository<T, ID> implements JpaRepositoryImplementation<T
 	 * @param entityManager must not be {@literal null}.
 	 */
 	public SimpleJpaRepository(JpaEntityInformation<T, ?> entityInformation, EntityManager entityManager) {
+	    	this(entityInformation, entityManager, null);
+	}
+	
+	/**
+	 * Creates a new {@link SimpleJpaRepository} to manage objects of the given {@link JpaEntityInformation}.
+	 *
+	 * @param entityInformation must not be {@literal null}.
+	 * @param entityManager must not be {@literal null}.
+	 * @param entityManagerCreation if is null uses entityManager
+	 */
+	public SimpleJpaRepository(JpaEntityInformation<T, ?> entityInformation, EntityManager entityManager, EntityManager entityManagerCreation) {
 
 		Assert.notNull(entityInformation, "JpaEntityInformation must not be null!");
 		Assert.notNull(entityManager, "EntityManager must not be null!");
 
 		this.entityInformation = entityInformation;
 		this.em = entityManager;
-		this.provider = PersistenceProvider.fromEntityManager(entityManager);
+		this.provider = PersistenceProvider.fromEntityManager((entityManagerCreation != null ? entityManagerCreation : entityManager));
 	}
 
 	/**
@@ -124,7 +140,18 @@ public class SimpleJpaRepository<T, ID> implements JpaRepositoryImplementation<T
 	 * @param em must not be {@literal null}.
 	 */
 	public SimpleJpaRepository(Class<T> domainClass, EntityManager em) {
-		this(JpaEntityInformationSupport.getEntityInformation(domainClass, em), em);
+		this(JpaEntityInformationSupport.getEntityInformation(domainClass, em), em, null);
+	}
+	
+	/**
+	 * Creates a new {@link SimpleJpaRepository} to manage objects of the given domain type.
+	 *
+	 * @param domainClass must not be {@literal null}.
+	 * @param em must not be {@literal null}.
+	 * @param emCreation if is null uses em
+	 */
+	public SimpleJpaRepository(Class<T> domainClass, EntityManager em, EntityManager emCreation) {
+		this(JpaEntityInformationSupport.getEntityInformation(domainClass, (emCreation != null ? emCreation : em)), em, emCreation);
 	}
 
 	/**

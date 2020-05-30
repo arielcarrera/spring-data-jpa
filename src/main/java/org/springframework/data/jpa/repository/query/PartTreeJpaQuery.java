@@ -49,6 +49,7 @@ import org.springframework.lang.Nullable;
  * @author Jens Schauder
  * @author Mark Paluch
  * @author Сергей Цыпанов
+ * @author Ariel Carrera
  */
 public class PartTreeJpaQuery extends AbstractJpaQuery {
 
@@ -57,7 +58,7 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 
 	private final QueryPreparer query;
 	private final QueryPreparer countQuery;
-	private final EntityManager em;
+	//private final EntityManager em; 
 	private final EscapeCharacter escape;
 
 	/**
@@ -68,7 +69,19 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 	 * @param persistenceProvider must not be {@literal null}.
 	 */
 	PartTreeJpaQuery(JpaQueryMethod method, EntityManager em, PersistenceProvider persistenceProvider) {
-		this(method, em, persistenceProvider, EscapeCharacter.DEFAULT);
+		this(method, em, null, persistenceProvider, EscapeCharacter.DEFAULT);
+	}
+	
+	/**
+	 * Creates a new {@link PartTreeJpaQuery}.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @param em must not be {@literal null}.
+	 * @param emCreation if is null uses em
+	 * @param persistenceProvider must not be {@literal null}.
+	 */
+	PartTreeJpaQuery(JpaQueryMethod method, EntityManager em, EntityManager emCreation, PersistenceProvider persistenceProvider) {
+		this(method, em, emCreation, persistenceProvider, EscapeCharacter.DEFAULT);
 	}
 
 	/**
@@ -79,12 +92,23 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 	 * @param persistenceProvider must not be {@literal null}.
 	 * @param escape
 	 */
-	PartTreeJpaQuery(JpaQueryMethod method, EntityManager em, PersistenceProvider persistenceProvider,
-			EscapeCharacter escape) {
+	PartTreeJpaQuery(JpaQueryMethod method, EntityManager em, PersistenceProvider persistenceProvider, EscapeCharacter escape) {
+	    this(method, em, null, persistenceProvider, escape);
+	}
+	
+	/**
+	 * Creates a new {@link PartTreeJpaQuery}.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @param em must not be {@literal null}.
+	 * @param emCreation if is null uses em
+	 * @param persistenceProvider must not be {@literal null}.
+	 * @param escape
+	 */
+	PartTreeJpaQuery(JpaQueryMethod method, EntityManager em, EntityManager emCreation, PersistenceProvider persistenceProvider, EscapeCharacter escape) {
 
-		super(method, em);
+		super(method, em, emCreation);
 
-		this.em = em;
 		this.escape = escape;
 		Class<?> domainClass = method.getEntityInformation().getJavaType();
 		this.parameters = method.getParameters();
@@ -131,7 +155,7 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 	protected JpaQueryExecution getExecution() {
 
 		if (this.tree.isDelete()) {
-			return new DeleteExecution(em);
+			return new DeleteExecution(getEntityManager());
 		} else if (this.tree.isExistsProjection()) {
 			return new ExistsExecution();
 		}
@@ -308,7 +332,7 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 		protected JpaQueryCreator createCreator(PersistenceProvider persistenceProvider,
 				@Nullable JpaParametersParameterAccessor accessor) {
 
-			EntityManager entityManager = getEntityManager();
+			EntityManager entityManager = getEntityManagerCreation();
 
 			CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 			ResultProcessor processor = getQueryMethod().getResultProcessor();
@@ -367,7 +391,7 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 		protected JpaQueryCreator createCreator(PersistenceProvider persistenceProvider,
 				JpaParametersParameterAccessor accessor) {
 
-			EntityManager entityManager = getEntityManager();
+			EntityManager entityManager = getEntityManagerCreation();
 			CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
 			ParameterMetadataProvider provider;

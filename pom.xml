@@ -4,11 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.springframework.data</groupId>
-	<artifactId>spring-data-jpa</artifactId>
-	<version>2.2.1.RELEASE</version>
+	<artifactId>spring-data-jpa-cdi</artifactId>
+	<version>2.2.1.CDI.1</version>
 
-	<name>Spring Data JPA</name>
-	<description>Spring Data module for JPA repositories.</description>
+	<name>Spring Data JPA (CDI)</name>
+	<description>Spring Data module for JPA repositories and CDI support.</description>
 	<url>https://projects.spring.io/spring-data-jpa</url>
 
 	<parent>
@@ -26,7 +26,7 @@
 		<mockito>2.19.1</mockito>
 		<hibernate.groupId>org.hibernate</hibernate.groupId>
 		<jpa>2.0.0</jpa>
-		<springdata.commons>2.2.1.RELEASE</springdata.commons>
+		<springdata.commons>${project.version}</springdata.commons>
 
 		<java-module-name>spring.data.jpa</java-module-name>
 
@@ -202,7 +202,7 @@
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>spring-data-commons</artifactId>
+			<artifactId>spring-data-commons-cdi</artifactId>
 			<version>${springdata.commons}</version>
 		</dependency>
 

@@ -59,11 +59,13 @@ import org.springframework.util.Assert;
  * @author Nicolas Cirigliano
  * @author Jens Schauder
  * @author Сергей Цыпанов
+ * @author Ariel Carrera
  */
 public abstract class AbstractJpaQuery implements RepositoryQuery {
 
 	private final JpaQueryMethod method;
 	private final EntityManager em;
+	private final EntityManager emCreation;
 	private final JpaMetamodel metamodel;
 	private final PersistenceProvider provider;
 	private final Lazy<JpaQueryExecution> execution;
@@ -77,16 +79,20 @@ public abstract class AbstractJpaQuery implements RepositoryQuery {
 	 * @param em
 	 */
 	public AbstractJpaQuery(JpaQueryMethod method, EntityManager em) {
+	    	this(method, em, null);
+	}
+	
+	public AbstractJpaQuery(JpaQueryMethod method, EntityManager em, EntityManager emCreational) {
 
 		Assert.notNull(method, "JpaQueryMethod must not be null!");
 		Assert.notNull(em, "EntityManager must not be null!");
 
 		this.method = method;
 		this.em = em;
-		this.metamodel = JpaMetamodel.of(em.getMetamodel());
-		this.provider = PersistenceProvider.fromEntityManager(em);
+		this.emCreation = (emCreational != null ? emCreational : em);
+		this.metamodel = JpaMetamodel.of(this.emCreation.getMetamodel());
+		this.provider = PersistenceProvider.fromEntityManager(this.emCreation);
 		this.execution = Lazy.of(() -> {
-
 			if (method.isStreamQuery()) {
 				return new StreamExecution();
 			} else if (method.isProcedureQuery()) {
@@ -104,7 +110,16 @@ public abstract class AbstractJpaQuery implements RepositoryQuery {
 			}
 		});
 	}
-
+	
+	/**
+	 * Returns the {@link EntityManager} for creation
+	 *
+	 * @return will never be {@literal null}.
+	 */
+	protected EntityManager getEntityManagerCreation() {
+		return emCreation;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.RepositoryQuery#getQueryMethod()
@@ -236,14 +251,14 @@ public abstract class AbstractJpaQuery implements RepositoryQuery {
 	 */
 	private Query applyEntityGraphConfiguration(Query query, JpaQueryMethod method) {
 
-		JpaEntityGraph entityGraph = method.getEntityGraph();
+	    JpaEntityGraph entityGraph = method.getEntityGraph();
 
 		if (entityGraph != null) {
-			Map<String, Object> hints = Jpa21Utils.tryGetFetchGraphHints(em, method.getEntityGraph(),
+			Map<String, Object> hints = Jpa21Utils.tryGetFetchGraphHints(emCreation, method.getEntityGraph(),
 					getQueryMethod().getEntityInformation().getJavaType());
 
 			for (Map.Entry<String, Object> hint : hints.entrySet()) {
-				query.setHint(hint.getKey(), hint.getValue());
+			    query.setHint(hint.getKey(), hint.getValue());
 			}
 		}
 

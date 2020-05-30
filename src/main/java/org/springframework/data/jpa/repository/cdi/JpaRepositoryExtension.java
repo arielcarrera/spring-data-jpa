@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.repository.cdi.CdiRepositoryBean;
 import org.springframework.data.repository.cdi.CdiRepositoryExtensionSupport;
+import org.springframework.data.repository.cdi.RepositoryCreation;
 
 /**
  * A portable CDI extension which registers beans for Spring Data JPA repositories.
@@ -44,6 +45,7 @@ import org.springframework.data.repository.cdi.CdiRepositoryExtensionSupport;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Ariel Carrera
  */
 public class JpaRepositoryExtension extends CdiRepositoryExtensionSupport {
 
@@ -115,14 +117,26 @@ public class JpaRepositoryExtension extends CdiRepositoryExtensionSupport {
 
 		// Determine the entity manager bean which matches the qualifiers of the repository.
 		Bean<EntityManager> entityManagerBean = entityManagers.get(qualifiers);
+		
+		Bean<EntityManager> entityManagerBeanCreation = null;
+		for (Set<Annotation> s : entityManagers.keySet()) {
+			if (s.toString().contains(RepositoryCreation.class.getName())) {
+				entityManagerBeanCreation = entityManagers.get(s);
+				break;
+			}
+		}
 
 		if (entityManagerBean == null) {
 			throw new UnsatisfiedResolutionException(String.format("Unable to resolve a bean for '%s' with qualifiers %s.",
 					EntityManager.class.getName(), qualifiers));
 		}
+		
+		if (entityManagerBeanCreation == null) {
+			entityManagerBeanCreation = entityManagerBean;
+		}
 
 		// Construct and return the repository bean.
-		return new JpaRepositoryBean<T>(beanManager, entityManagerBean, qualifiers, repositoryType,
+		return new JpaRepositoryBean<T>(beanManager, entityManagerBean, entityManagerBeanCreation, qualifiers, repositoryType,
 				Optional.of(getCustomImplementationDetector()));
 	}
 }

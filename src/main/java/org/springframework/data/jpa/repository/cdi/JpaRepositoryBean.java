@@ -36,11 +36,13 @@ import org.springframework.util.Assert;
  * @author Oliver Gierke
  * @author Mark Paluch
  * @author Christoph Strobl
+ * @author Ariel Carrera
  * @param <T> The type of the repository.
  */
 class JpaRepositoryBean<T> extends CdiRepositoryBean<T> {
 
 	private final Bean<EntityManager> entityManagerBean;
+	private final Bean<EntityManager> entityManagerBeanCreation;
 
 	/**
 	 * Constructs a {@link JpaRepositoryBean}.
@@ -53,11 +55,16 @@ class JpaRepositoryBean<T> extends CdiRepositoryBean<T> {
 	 */
 	JpaRepositoryBean(BeanManager beanManager, Bean<EntityManager> entityManagerBean, Set<Annotation> qualifiers,
 			Class<T> repositoryType, Optional<CustomRepositoryImplementationDetector> detector) {
-
+		this(beanManager, entityManagerBean, entityManagerBean, qualifiers, repositoryType, detector);
+	}
+	
+	JpaRepositoryBean(BeanManager beanManager, Bean<EntityManager> entityManagerBean, Bean<EntityManager> entityManagerBeanCreation, Set<Annotation> qualifiers,
+			Class<T> repositoryType, Optional<CustomRepositoryImplementationDetector> detector) {
 		super(qualifiers, repositoryType, beanManager, detector);
 
 		Assert.notNull(entityManagerBean, "EntityManager bean must not be null!");
 		this.entityManagerBean = entityManagerBean;
+		this.entityManagerBeanCreation = entityManagerBeanCreation;
 	}
 
 	/*
@@ -68,7 +75,11 @@ class JpaRepositoryBean<T> extends CdiRepositoryBean<T> {
 	protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType) {
 
 		EntityManager entityManager = getDependencyInstance(entityManagerBean, EntityManager.class);
+		
+		EntityManager entityManagerDependent = (entityManagerBeanCreation != null ? 
+			getDependencyInstance(entityManagerBeanCreation, EntityManager.class) : null);
+		
 
-		return create(() -> new JpaRepositoryFactory(entityManager), repositoryType);
+		return create(() -> new JpaRepositoryFactory(entityManager, entityManagerDependent), repositoryType);
 	}
 }

@@ -15,8 +15,6 @@
  */
 package org.springframework.data.jpa.repository.query;
 
-import static org.springframework.data.jpa.repository.query.QueryParameterSetter.ErrorHandling.*;
-
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.Tuple;
@@ -24,7 +22,6 @@ import javax.persistence.TypedQuery;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.data.jpa.provider.QueryExtractor;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryCreationException;
@@ -39,6 +36,7 @@ import org.springframework.lang.Nullable;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Mark Paluch
+ * @author Ariel Carrera
  */
 final class NamedQuery extends AbstractJpaQuery {
 
@@ -61,9 +59,16 @@ final class NamedQuery extends AbstractJpaQuery {
 	 * Creates a new {@link NamedQuery}.
 	 */
 	private NamedQuery(JpaQueryMethod method, EntityManager em) {
+		this(method, em, null);
+	}
+	
+	/**
+	 * Creates a new {@link NamedQuery}.
+	 */
+	private NamedQuery(JpaQueryMethod method, EntityManager em, EntityManager emCreation) {
 
-		super(method, em);
-
+		super(method, em, emCreation);
+		
 		this.queryName = method.getNamedQueryName();
 		this.countQueryName = method.getNamedCountQueryName();
 		this.extractor = method.getQueryExtractor();
@@ -76,9 +81,9 @@ final class NamedQuery extends AbstractJpaQuery {
 					+ "not contain a sort parameter as we cannot modify the query! Use @Query instead!", method));
 		}
 
-		this.namedCountQueryIsPresent = hasNamedQuery(em, countQueryName);
+		this.namedCountQueryIsPresent = hasNamedQuery((emCreation != null ? emCreation : em), countQueryName);
 
-		Query query = em.createNamedQuery(queryName);
+		Query query = em.createNamedQuery(queryName);//TODO verify if em is ok here
 		String queryString = extractor.extractQueryString(query);
 
 		this.declaredQuery = DeclaredQuery.of(queryString);
@@ -134,16 +139,31 @@ final class NamedQuery extends AbstractJpaQuery {
 	@Nullable
 	public static RepositoryQuery lookupFrom(JpaQueryMethod method, EntityManager em) {
 
+	    	return lookupFrom(method, em, null);
+	}
+	
+	/**
+	 * Looks up a named query for the given {@link org.springframework.data.repository.query.QueryMethod}.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @param em must not be {@literal null}.
+	 * @param emCreational can be {@literal null}.
+	 * @return
+	 */
+	@Nullable
+	public static RepositoryQuery lookupFrom(JpaQueryMethod method, EntityManager em, EntityManager emCreational) {
+
 		final String queryName = method.getNamedQueryName();
 
 		LOG.debug("Looking up named query {}", queryName);
-
-		if (!hasNamedQuery(em, queryName)) {
+		EntityManager emCreation = (emCreational != null ? emCreational : em);
+		
+		if (!hasNamedQuery(emCreation, queryName)) {
 			return null;
 		}
 
 		try {
-			RepositoryQuery query = new NamedQuery(method, em);
+			RepositoryQuery query = new NamedQuery(method, em, emCreation);
 			LOG.debug("Found named query {}!", queryName);
 			return query;
 		} catch (IllegalArgumentException e) {

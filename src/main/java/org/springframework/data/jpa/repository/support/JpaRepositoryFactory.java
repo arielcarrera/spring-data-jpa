@@ -65,10 +65,12 @@ import org.springframework.util.ReflectionUtils;
  * @author Christoph Strobl
  * @author Jens Schauder
  * @author Stefan Fussenegger
+ * @author Ariel Carrera
  */
 public class JpaRepositoryFactory extends RepositoryFactorySupport {
 
 	private final EntityManager entityManager;
+	private final EntityManager entityManagerCreation;
 	private final QueryExtractor extractor;
 	private final CrudMethodMetadataPostProcessor crudMethodMetadataPostProcessor;
 
@@ -81,11 +83,16 @@ public class JpaRepositoryFactory extends RepositoryFactorySupport {
 	 * @param entityManager must not be {@literal null}
 	 */
 	public JpaRepositoryFactory(EntityManager entityManager) {
+	    	this(entityManager, null);
+	}
+
+	public JpaRepositoryFactory(EntityManager entityManager,EntityManager entityManagerCreational) {
 
 		Assert.notNull(entityManager, "EntityManager must not be null!");
 
 		this.entityManager = entityManager;
-		this.extractor = PersistenceProvider.fromEntityManager(entityManager);
+		this.entityManagerCreation = (entityManagerCreational != null ? entityManagerCreational : entityManager);
+		this.extractor = PersistenceProvider.fromEntityManager(this.entityManagerCreation);
 		this.crudMethodMetadataPostProcessor = new CrudMethodMetadataPostProcessor();
 		this.entityPathResolver = SimpleEntityPathResolver.INSTANCE;
 
@@ -98,7 +105,7 @@ public class JpaRepositoryFactory extends RepositoryFactorySupport {
 		});
 
 		if (extractor.equals(PersistenceProvider.ECLIPSELINK)) {
-			addQueryCreationListener(new EclipseLinkProjectionQueryCreationListener(entityManager));
+			addQueryCreationListener(new EclipseLinkProjectionQueryCreationListener(this.entityManagerCreation)); //TODO validate if this em is valid here
 		}
 	}
 
@@ -141,7 +148,7 @@ public class JpaRepositoryFactory extends RepositoryFactorySupport {
 	@Override
 	protected final JpaRepositoryImplementation<?, ?> getTargetRepository(RepositoryInformation information) {
 
-		JpaRepositoryImplementation<?, ?> repository = getTargetRepository(information, entityManager);
+		JpaRepositoryImplementation<?, ?> repository = getTargetRepository(information, entityManager, entityManagerCreation);
 		repository.setRepositoryMethodMetadata(crudMethodMetadataPostProcessor.getCrudMethodMetadata());
 		repository.setEscapeCharacter(escapeCharacter);
 
@@ -157,9 +164,17 @@ public class JpaRepositoryFactory extends RepositoryFactorySupport {
 	 */
 	protected JpaRepositoryImplementation<?, ?> getTargetRepository(RepositoryInformation information,
 			EntityManager entityManager) {
+		return getTargetRepository(information, entityManager, null);
+	}
+	
+	protected JpaRepositoryImplementation<?, ?> getTargetRepository(RepositoryInformation information,
+		EntityManager entityManager, EntityManager entityManagerCreation) {
 
-		JpaEntityInformation<?, Serializable> entityInformation = getEntityInformation(information.getDomainType());
-		Object repository = getTargetRepositoryViaReflection(information, entityInformation, entityManager);
+        	JpaEntityInformation<?, Serializable> entityInformation = getEntityInformation(information.getDomainType());
+        	Object repository = 
+        		(entityManagerCreation == null || entityManager == entityManagerCreation ?
+        			getTargetRepositoryViaReflection(information, entityInformation, entityManager) :
+        			    getTargetRepositoryViaReflection(information, entityInformation, entityManager, entityManagerCreation));
 
 		Assert.isInstanceOf(JpaRepositoryImplementation.class, repository);
 
@@ -197,7 +212,7 @@ public class JpaRepositoryFactory extends RepositoryFactorySupport {
 	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable Key key,
 			QueryMethodEvaluationContextProvider evaluationContextProvider) {
 		return Optional
-				.of(JpaQueryLookupStrategy.create(entityManager, key, extractor, evaluationContextProvider, escapeCharacter));
+				.of(JpaQueryLookupStrategy.create(entityManager, entityManagerCreation, key, extractor, evaluationContextProvider, escapeCharacter));
 	}
 
 	/*
@@ -207,8 +222,7 @@ public class JpaRepositoryFactory extends RepositoryFactorySupport {
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T, ID> JpaEntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
-
-		return (JpaEntityInformation<T, ID>) JpaEntityInformationSupport.getEntityInformation(domainClass, entityManager);
+		return (JpaEntityInformation<T, ID>) JpaEntityInformationSupport.getEntityInformation(domainClass, entityManagerCreation);
 	}
 
 	/*

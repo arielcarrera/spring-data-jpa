@@ -31,6 +31,7 @@ import org.springframework.lang.Nullable;
  *
  * @author Thomas Darimont
  * @author Mark Paluch
+ * @author Ariel Carrera
  */
 enum JpaQueryFactory {
 
@@ -53,7 +54,25 @@ enum JpaQueryFactory {
 			QueryMethodEvaluationContextProvider evaluationContextProvider) {
 
 		LOG.debug("Looking up query for method {}", method.getName());
-		return fromMethodWithQueryString(method, em, method.getAnnotatedQuery(), evaluationContextProvider);
+		return fromMethodWithQueryString(method, em, null, method.getAnnotatedQuery(), evaluationContextProvider);
+	}
+	
+	/**
+	 * Creates a {@link RepositoryQuery} from the given {@link QueryMethod} that is potentially annotated with
+	 * {@link Query}.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @param em must not be {@literal null}.
+	 * @param emCreation
+	 * @param evaluationContextProvider
+	 * @return the {@link RepositoryQuery} derived from the annotation or {@code null} if no annotation found.
+	 */
+	@Nullable
+	AbstractJpaQuery fromQueryAnnotation(JpaQueryMethod method, EntityManager em, EntityManager emCreation,
+			QueryMethodEvaluationContextProvider evaluationContextProvider) {
+
+		LOG.debug("Looking up query for method {}", method.getName());
+		return fromMethodWithQueryString(method, em, emCreation, method.getAnnotatedQuery(), evaluationContextProvider);
 	}
 
 	/**
@@ -73,8 +92,30 @@ enum JpaQueryFactory {
 			return null;
 		}
 
-		return method.isNativeQuery() ? new NativeJpaQuery(method, em, queryString, evaluationContextProvider, PARSER)
-				: new SimpleJpaQuery(method, em, queryString, evaluationContextProvider, PARSER);
+		return method.isNativeQuery() ? new NativeJpaQuery(method, em, null, queryString, evaluationContextProvider, PARSER)
+				: new SimpleJpaQuery(method, em, null, queryString, evaluationContextProvider, PARSER);
+	}
+	
+	/**
+	 * Creates a {@link RepositoryQuery} from the given {@link String} query.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @param em must not be {@literal null}.
+	 * @param emCreation
+	 * @param queryString must not be {@literal null} or empty.
+	 * @param evaluationContextProvider
+	 * @return
+	 */
+	@Nullable
+	AbstractJpaQuery fromMethodWithQueryString(JpaQueryMethod method, EntityManager em, EntityManager emCreation, @Nullable String queryString,
+			QueryMethodEvaluationContextProvider evaluationContextProvider) {
+
+		if (queryString == null) {
+			return null;
+		}
+
+		return method.isNativeQuery() ? new NativeJpaQuery(method, em, emCreation, queryString, evaluationContextProvider, PARSER)
+				: new SimpleJpaQuery(method, em, emCreation, queryString, evaluationContextProvider, PARSER);
 	}
 
 	/**
@@ -91,6 +132,24 @@ enum JpaQueryFactory {
 			return null;
 		}
 
-		return new StoredProcedureJpaQuery(method, em);
+		return new StoredProcedureJpaQuery(method, em, null);
+	}
+	
+	/**
+	 * Creates a {@link StoredProcedureJpaQuery} from the given {@link JpaQueryMethod} query.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @param em must not be {@literal null}.
+	 * @param emCreation
+	 * @return
+	 */
+	@Nullable
+	public StoredProcedureJpaQuery fromProcedureAnnotation(JpaQueryMethod method, EntityManager em, EntityManager emCreation) {
+
+		if (!method.isProcedureQuery()) {
+			return null;
+		}
+
+		return new StoredProcedureJpaQuery(method, em, emCreation);
 	}
 }

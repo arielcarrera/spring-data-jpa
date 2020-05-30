@@ -46,6 +46,7 @@ import org.springframework.util.StringUtils;
  * @author Mark Paluch
  * @author Jeff Sheets
  * @author JyotirmoyVS
+ * @author Ariel Carrera
  * @since 1.6
  */
 class StoredProcedureJpaQuery extends AbstractJpaQuery {
@@ -59,10 +60,11 @@ class StoredProcedureJpaQuery extends AbstractJpaQuery {
 	 *
 	 * @param method must not be {@literal null}
 	 * @param em must not be {@literal null}
+	 * @param emCreation if is null uses em
 	 */
-	StoredProcedureJpaQuery(JpaQueryMethod method, EntityManager em) {
+	StoredProcedureJpaQuery(JpaQueryMethod method, EntityManager em, EntityManager emCreation) {
 
-		super(method, em);
+		super(method, em, emCreation);
 		this.procedureAttributes = method.getProcedureAttributes();
 		this.useNamedParameters = useNamedParameters(method);
 

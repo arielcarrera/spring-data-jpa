@@ -24,6 +24,8 @@ import java.util.Optional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.ManagedType;
 import javax.persistence.metamodel.Metamodel;
 
 import org.junit.Before;
@@ -49,6 +51,7 @@ import org.springframework.util.ClassUtils;
  * @author Oliver Gierke
  * @author Thomas Darimont
  * @author Jens Schauder
+ * @author Ariel Carrera
  */
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class JpaRepositoryFactoryUnitTests {
@@ -59,6 +62,7 @@ public class JpaRepositoryFactoryUnitTests {
 	@Mock Metamodel metamodel;
 	@Mock @SuppressWarnings("rawtypes") JpaEntityInformation entityInformation;
 	@Mock EntityManagerFactory emf;
+	@Mock EntityType<User> managedType;
 
 	@Before
 	public void setUp() {
@@ -67,6 +71,8 @@ public class JpaRepositoryFactoryUnitTests {
 		when(entityManager.getEntityManagerFactory()).thenReturn(emf);
 		when(entityManager.getDelegate()).thenReturn(entityManager);
 		when(emf.createEntityManager()).thenReturn(entityManager);
+		when(metamodel.managedType(User.class)).thenReturn(managedType);
+		when(managedType.getName()).thenReturn("User");
 
 		// Setup standard factory configuration
 		factory = new JpaRepositoryFactory(entityManager) {
@@ -136,10 +142,9 @@ public class JpaRepositoryFactoryUnitTests {
 	@Test(expected = UnsupportedOperationException.class)
 	public void createsProxyWithCustomBaseClass() {
 
-		JpaRepositoryFactory factory = new CustomGenericJpaRepositoryFactory(entityManager);
+	    	JpaRepositoryFactory factory = new CustomGenericJpaRepositoryFactory(entityManager);
 		factory.setQueryLookupStrategyKey(Key.CREATE_IF_NOT_FOUND);
 		UserCustomExtendedRepository repository = factory.getRepository(UserCustomExtendedRepository.class);
-
 		repository.customMethod(1);
 	}
 
@@ -190,10 +195,14 @@ public class JpaRepositoryFactoryUnitTests {
 
 	}
 
-static class CustomJpaRepository<T, ID extends Serializable> extends SimpleJpaRepository<T, ID> {
+	static class CustomJpaRepository<T, ID extends Serializable> extends SimpleJpaRepository<T, ID> {
 
 		public CustomJpaRepository(JpaEntityInformation<T, ?> entityInformation, EntityManager entityManager) {
 			super(entityInformation, entityManager);
+		}
+		
+		public CustomJpaRepository(JpaEntityInformation<T, ?> entityInformation, EntityManager entityManager, EntityManager entityManagerCreational) {
+			super(entityInformation, entityManager, entityManagerCreational);
 		}
 	}
 

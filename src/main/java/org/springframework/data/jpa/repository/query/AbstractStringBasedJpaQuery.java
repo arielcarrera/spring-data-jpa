@@ -33,6 +33,7 @@ import org.springframework.util.Assert;
  * @author Tom Hombergs
  * @author David Madden
  * @author Mark Paluch
+ * @author Ariel Carrera
  */
 abstract class AbstractStringBasedJpaQuery extends AbstractJpaQuery {
 
@@ -48,15 +49,16 @@ abstract class AbstractStringBasedJpaQuery extends AbstractJpaQuery {
 	 *
 	 * @param method must not be {@literal null}.
 	 * @param em must not be {@literal null}.
+	 * @param emcreation if is null uses em
 	 * @param queryString must not be {@literal null}.
 	 * @param evaluationContextProvider must not be {@literal null}.
 	 * @param parser must not be {@literal null}.
 	 */
-	public AbstractStringBasedJpaQuery(JpaQueryMethod method, EntityManager em, String queryString,
-			QueryMethodEvaluationContextProvider evaluationContextProvider, SpelExpressionParser parser) {
+	public AbstractStringBasedJpaQuery(JpaQueryMethod method, EntityManager em, EntityManager emCreation, String queryString,
+		QueryMethodEvaluationContextProvider evaluationContextProvider, SpelExpressionParser parser) {
 
-		super(method, em);
-
+		super(method, em, emCreation);
+        
 		Assert.hasText(queryString, "Query string must not be null or empty!");
 		Assert.notNull(evaluationContextProvider, "ExpressionEvaluationContextProvider must not be null!");
 		Assert.notNull(parser, "Parser must not be null!");
