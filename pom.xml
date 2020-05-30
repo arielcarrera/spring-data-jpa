@@ -537,4 +537,16 @@
 		</pluginRepository>
 	</pluginRepositories>
 
+	<distributionManagement>
+		<snapshotRepository>
+			<id>InternalSnapshots</id>
+			<name>Internal Snapshots</name>
+			<url>${nexus.baseUrl}/repository/maven-snapshots/</url>
+		</snapshotRepository>
+		<repository>
+			<id>InternalReleases</id>
+			<name>Internal Releases</name>
+			<url>${nexus.baseUrl}/repository/maven-releases/</url>
+		</repository>
+	</distributionManagement>
 </project>
