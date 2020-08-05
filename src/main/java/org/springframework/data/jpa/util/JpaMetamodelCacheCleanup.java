@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 the original author or authors.
+ * Copyright 2018-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
 
 /**
- * Simple component to be reigstered as Spring bean to clear the {@link JpaMetamodel} cache to avoid a memory leak in
+ * Simple component to be registered as Spring bean to clear the {@link JpaMetamodel} cache to avoid a memory leak in
  * applications bootstrapping multiple {@link ApplicationContext}s.
  * 
  * @author Oliver Gierke

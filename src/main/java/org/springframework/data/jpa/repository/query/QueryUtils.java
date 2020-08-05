@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2019 the original author or authors.
+ * Copyright 2008-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,6 +79,8 @@ import org.springframework.util.StringUtils;
  * @author Florian Lüdiger
  * @author Grégoire Druant
  * @author Mohammad Hewedy
+ * @author Andriy Redko
+ * @author Peter Großmann
  */
 public abstract class QueryUtils {
 
@@ -89,8 +91,8 @@ public abstract class QueryUtils {
 	// Z Separator
 	// Cc Control
 	// Cf Format
-	// P Punctuation
-	private static final String IDENTIFIER = "[._[\\P{Z}&&\\P{Cc}&&\\P{Cf}&&\\P{P}]]+";
+	// Punct Punctuation
+	private static final String IDENTIFIER = "[._$[\\P{Z}&&\\P{Cc}&&\\P{Cf}&&\\P{Punct}]]+";
 	static final String COLON_NO_DOUBLE_COLON = "(?<![:\\\\]):";
 	static final String IDENTIFIER_GROUP = String.format("(%s)", IDENTIFIER);
 
@@ -102,7 +104,7 @@ public abstract class QueryUtils {
 
 	private static final Pattern ALIAS_MATCH;
 	private static final Pattern COUNT_MATCH;
-	private static final Pattern PROJECTION_CLAUSE = Pattern.compile("select\\s+(.+)\\s+from", Pattern.CASE_INSENSITIVE);
+	private static final Pattern PROJECTION_CLAUSE = Pattern.compile("select\\s+(?:distinct\\s+)?(.+)\\s+from", Pattern.CASE_INSENSITIVE);
 
 	private static final Pattern NO_DIGITS = Pattern.compile("\\D+");
 

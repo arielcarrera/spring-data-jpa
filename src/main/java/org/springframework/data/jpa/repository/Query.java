@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2019 the original author or authors.
+ * Copyright 2008-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,13 +45,13 @@ public @interface Query {
 
 	/**
 	 * Defines a special count query that shall be used for pagination queries to lookup the total number of elements for
-	 * a page. If non is configured we will derive the count query from the method name.
+	 * a page. If none is configured we will derive the count query from the original query or {@link #countProjection()} query if any.
 	 */
 	String countQuery() default "";
 
 	/**
 	 * Defines the projection part of the count query that is generated for pagination. If neither {@link #countQuery()}
-	 * not {@link #countProjection()} is configured we will derive the count query from the method name.
+	 * nor {@link #countProjection()} is configured we will derive the count query from the original query.
 	 *
 	 * @return
 	 * @since 1.6

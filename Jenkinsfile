@@ -3,7 +3,7 @@ pipeline {
 
 	triggers {
 		pollSCM 'H/10 * * * *'
-		upstream(upstreamProjects: "spring-data-commons/2.2.x", threshold: hudson.model.Result.SUCCESS)
+		upstream(upstreamProjects: "spring-data-commons/2.3.x", threshold: hudson.model.Result.SUCCESS)
 	}
 
 	options {
@@ -12,18 +12,39 @@ pipeline {
 	}
 
 	stages {
-		stage("Test") {
+		stage("test: baseline (jdk8)") {
 			when {
 				anyOf {
-					branch '2.2.x'
+					branch '2.3.x'
+					not { triggeredBy 'UpstreamCause' }
+				}
+			}
+			agent {
+				docker {
+					image 'adoptopenjdk/openjdk8:latest'
+					label 'data'
+					args '-v $HOME:/tmp/jenkins-home'
+				}
+			}
+			options { timeout(time: 30, unit: 'MINUTES') }
+			steps {
+				sh 'rm -rf ?'
+				sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw clean dependency:list test -Dsort -Dbundlor.enabled=false -U -B'
+			}
+		}
+
+		stage("Test other configurations") {
+			when {
+				anyOf {
+					branch '2.3.x'
 					not { triggeredBy 'UpstreamCause' }
 				}
 			}
 			parallel {
-				stage("test: baseline") {
+				stage("test: baseline (jdk11)") {
 					agent {
 						docker {
-							image 'adoptopenjdk/openjdk8:latest'
+							image 'adoptopenjdk/openjdk11:latest'
 							label 'data'
 							args '-v $HOME:/tmp/jenkins-home'
 						}
@@ -31,13 +52,14 @@ pipeline {
 					options { timeout(time: 30, unit: 'MINUTES') }
 					steps {
 						sh 'rm -rf ?'
-						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw clean dependency:list test -Dsort -Dbundlor.enabled=false -U -B'
+						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Pjava11 clean dependency:list test -Dsort -Dbundlor.enabled=false -U -B'
 					}
 				}
-				stage("test: hibernate-next") {
+
+				stage("test: baseline (jdk14)") {
 					agent {
 						docker {
-							image 'adoptopenjdk/openjdk8:latest'
+							image 'adoptopenjdk/openjdk14:latest'
 							label 'data'
 							args '-v $HOME:/tmp/jenkins-home'
 						}
@@ -45,66 +67,11 @@ pipeline {
 					options { timeout(time: 30, unit: 'MINUTES') }
 					steps {
 						sh 'rm -rf ?'
-						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Phibernate-next clean dependency:list test -Dsort -Dbundlor.enabled=false -U -B'
+						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Pjava11 clean dependency:list test -Dsort -Dbundlor.enabled=false -U -B'
 					}
 				}
-				stage("test: hibernate-53") {
-					agent {
-						docker {
-							image 'adoptopenjdk/openjdk8:latest'
-							label 'data'
-							args '-v $HOME:/tmp/jenkins-home'
-						}
-					}
-					options { timeout(time: 30, unit: 'MINUTES') }
-					steps {
-						sh 'rm -rf ?'
-						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Phibernate-53 clean dependency:list test -Dsort -Dbundlor.enabled=false -U -B'
-					}
-				}
-				stage("test: hibernate-53-next") {
-					agent {
-						docker {
-							image 'adoptopenjdk/openjdk8:latest'
-							label 'data'
-							args '-v $HOME:/tmp/jenkins-home'
-						}
-					}
-					options { timeout(time: 30, unit: 'MINUTES') }
-					steps {
-						sh 'rm -rf ?'
-						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Phibernate-53-next clean dependency:list test -Dsort -Dbundlor.enabled=false -U -B'
-					}
-				}
-				stage("test: hibernate-54") {
-					agent {
-						docker {
-							image 'adoptopenjdk/openjdk8:latest'
-							label 'data'
-							args '-v $HOME:/tmp/jenkins-home'
-						}
-					}
-					options { timeout(time: 30, unit: 'MINUTES') }
-					steps {
-						sh 'rm -rf ?'
-						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Phibernate-54 clean dependency:list test -Dsort -Dbundlor.enabled=false -U -B'
-					}
-				}
-				stage("test: hibernate-54-next") {
-					agent {
-						docker {
-							image 'adoptopenjdk/openjdk8:latest'
-							label 'data'
-							args '-v $HOME:/tmp/jenkins-home'
-						}
-					}
-					options { timeout(time: 30, unit: 'MINUTES') }
-					steps {
-						sh 'rm -rf ?'
-						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Phibernate-54-next clean dependency:list test -Dsort -Dbundlor.enabled=false -U -B'
-					}
-				}
-				stage("test: eclipselink-next") {
+
+				stage("test: eclipselink-next (jdk8)") {
 					agent {
 						docker {
 							image 'adoptopenjdk/openjdk8:latest'
@@ -118,10 +85,11 @@ pipeline {
 						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Peclipselink-next clean dependency:list test -Dsort -Dbundlor.enabled=false -U -B'
 					}
 				}
-				stage("test: eclipselink-27") {
+
+				stage("test: eclipselink-next (jdk11)") {
 					agent {
 						docker {
-							image 'adoptopenjdk/openjdk8:latest'
+							image 'adoptopenjdk/openjdk11:latest'
 							label 'data'
 							args '-v $HOME:/tmp/jenkins-home'
 						}
@@ -129,13 +97,14 @@ pipeline {
 					options { timeout(time: 30, unit: 'MINUTES') }
 					steps {
 						sh 'rm -rf ?'
-						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Peclipselink-27 clean dependency:list test -Dsort -Dbundlor.enabled=false -U -B'
+						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Peclipselink-next,java11 clean dependency:list test -Dsort -Dbundlor.enabled=false -U -B'
 					}
 				}
-				stage("test: eclipselink-27-next") {
+
+				stage("test: eclipselink-next (jdk14)") {
 					agent {
 						docker {
-							image 'adoptopenjdk/openjdk8:latest'
+							image 'adoptopenjdk/openjdk14:latest'
 							label 'data'
 							args '-v $HOME:/tmp/jenkins-home'
 						}
@@ -143,15 +112,16 @@ pipeline {
 					options { timeout(time: 30, unit: 'MINUTES') }
 					steps {
 						sh 'rm -rf ?'
-						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Peclipselink-27-next clean dependency:list test -Dsort -Dbundlor.enabled=false -U -B'
+						sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Peclipselink-next,java11 clean dependency:list test -Dsort -Dbundlor.enabled=false -U -B'
 					}
 				}
 			}
 		}
+
 		stage('Release to artifactory') {
 			when {
 				anyOf {
-					branch '2.2.x'
+					branch '2.3.x'
 					not { triggeredBy 'UpstreamCause' }
 				}
 			}
@@ -182,7 +152,7 @@ pipeline {
 		}
 		stage('Publish documentation') {
 			when {
-				branch '2.2.x'
+				branch '2.3.x'
 			}
 			agent {
 				docker {

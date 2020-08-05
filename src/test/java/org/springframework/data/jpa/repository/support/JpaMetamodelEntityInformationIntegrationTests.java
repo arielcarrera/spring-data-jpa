@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 the original author or authors.
+ * Copyright 2011-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -301,6 +301,22 @@ public class JpaMetamodelEntityInformationIntegrationTests {
 		assertThat(pk.getSecond()).isEqualTo(42L);
 	}
 
+	@Test // DATAJPA-1576
+	@Ignore
+	public void prefersPrivateGetterOverFieldAccess() {
+
+		EntityManagerFactory emf = Persistence.createEntityManagerFactory(getMetadadataPersitenceUnitName());
+		EntityManager em = emf.createEntityManager();
+
+		JpaEntityInformation<EntityWithPrivateIdGetter, ?> information = getEntityInformation(EntityWithPrivateIdGetter.class, em);
+
+		EntityWithPrivateIdGetter entity = new EntityWithPrivateIdGetter();
+
+		Object id = information.getId(entity);
+
+		assertThat(id).isEqualTo(42L);
+	}
+
 	protected String getMetadadataPersitenceUnitName() {
 		return "metadata";
 	}
@@ -357,5 +373,20 @@ public class JpaMetamodelEntityInformationIntegrationTests {
 
 		Long id;
 		EntityWithIdClassPK reference;
+	}
+
+	@Entity
+	public static class EntityWithPrivateIdGetter implements Serializable{
+
+		private long id = 0;
+
+		@Id
+		private long getId() {
+			return 42;
+		}
+
+		public void setId(long id) {
+			this.id = id;
+		}
 	}
 }

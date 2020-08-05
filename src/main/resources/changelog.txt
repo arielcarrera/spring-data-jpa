@@ -1,6 +1,190 @@
 Spring Data JPA Changelog
 =========================
 
+Changes in version 2.3.2.RELEASE (2020-07-22)
+---------------------------------------------
+* DATAJPA-1743 - Release 2.3.2 (Neumann SR2).
+
+
+Changes in version 2.2.9.RELEASE (2020-07-22)
+---------------------------------------------
+* DATAJPA-1742 - Release 2.2.9 (Moore SR9).
+
+
+Changes in version 2.1.19.RELEASE (2020-07-22)
+----------------------------------------------
+* DATAJPA-1741 - Release 2.1.19 (Lovelace SR19).
+
+
+Changes in version 2.4.0-M1 (2020-06-25)
+----------------------------------------
+* DATAJPA-1740 - Use standard Spring code of conduct.
+* DATAJPA-1728 - Delombok source files.
+* DATAJPA-1727 - Release 2.4 M1 (2020.0.0).
+
+
+Changes in version 2.3.1.RELEASE (2020-06-10)
+---------------------------------------------
+* DATAJPA-1726 - Release 2.3.1 (Neumann SR1).
+
+
+Changes in version 2.2.8.RELEASE (2020-06-10)
+---------------------------------------------
+* DATAJPA-1724 - Remove superfluous parenthesis from Javadoc.
+* DATAJPA-1720 - Remove Travis CI.
+* DATAJPA-1716 - Release 2.2.8 (Moore SR8).
+* DATAJPA-1576 - JpaMetamodelEntityInformation.getId(…) uses field access for proxied entities.
+
+
+Changes in version 2.1.18.RELEASE (2020-06-10)
+----------------------------------------------
+* DATAJPA-1724 - Remove superfluous parenthesis from Javadoc.
+* DATAJPA-1720 - Remove Travis CI.
+* DATAJPA-1715 - Release 2.1.18 (Lovelace SR18).
+* DATAJPA-1576 - JpaMetamodelEntityInformation.getId(…) uses field access for proxied entities.
+
+
+Changes in version 2.3.0.RELEASE (2020-05-12)
+---------------------------------------------
+* DATAJPA-1724 - Remove superfluous parenthesis from Javadoc.
+* DATAJPA-1720 - Remove Travis CI.
+* DATAJPA-1717 - Release 2.3 GA (Neumann).
+* DATAJPA-1576 - JpaMetamodelEntityInformation.getId(…) uses field access for proxied entities.
+
+
+Changes in version 2.3.0.RC2 (2020-04-28)
+-----------------------------------------
+* DATAJPA-1712 - Fix minor documentation typo.
+* DATAJPA-1708 - Use JDK 14 for Java.NEXT CI testing.
+* DATAJPA-1706 - Release 2.3 RC2 (Neumann).
+
+
+Changes in version 2.2.7.RELEASE (2020-04-28)
+---------------------------------------------
+* DATAJPA-1712 - Fix minor documentation typo.
+* DATAJPA-1702 - Release 2.2.7 (Moore SR7).
+
+
+Changes in version 2.1.17.RELEASE (2020-04-28)
+----------------------------------------------
+* DATAJPA-1712 - Fix minor documentation typo.
+* DATAJPA-1696 - Reluctant parsing introduced in DATAJPA-1679 causes problems.
+* DATAJPA-1691 - Javadoc spelling errors.
+* DATAJPA-1688 - Release 2.1.17 (Lovelace SR17).
+* DATAJPA-1679 - QueryUtils.getProjection dies not treat DISTINCT queries well.
+* DATAJPA-1664 - Typo errors in documentation of @EntityGraph.
+
+
+Changes in version 2.3.0.RC1 (2020-03-31)
+-----------------------------------------
+* DATAJPA-1696 - Reluctant parsing introduced in DATAJPA-1679 causes problems.
+* DATAJPA-1695 - Unbound parameters for queries using SpEL and quotation.
+* DATAJPA-1693 - Release 2.3 RC1 (Neumann).
+* DATAJPA-1660 - Add JpaSort.of(…) factory methods.
+
+
+Changes in version 2.2.6.RELEASE (2020-03-25)
+---------------------------------------------
+* DATAJPA-1696 - Reluctant parsing introduced in DATAJPA-1679 causes problems.
+* DATAJPA-1691 - Javadoc spelling errors.
+* DATAJPA-1689 - Release 2.2.6 (Moore SR6).
+* DATAJPA-1679 - QueryUtils.getProjection dies not treat DISTINCT queries well.
+* DATAJPA-1664 - Typo errors in documentation of @EntityGraph.
+
+
+Changes in version 2.3.0.M4 (2020-03-11)
+----------------------------------------
+* DATAJPA-1691 - Javadoc spelling errors.
+* DATAJPA-1680 - Release 2.3 M4 (Neumann).
+* DATAJPA-1679 - QueryUtils.getProjection dies not treat DISTINCT queries well.
+* DATAJPA-1664 - Typo errors in documentation of @EntityGraph.
+
+
+Changes in version 2.2.5.RELEASE (2020-02-26)
+---------------------------------------------
+* DATAJPA-1676 - Typo in some comments.
+* DATAJPA-1673 - Bulk delete query is invalid.
+* DATAJPA-1666 - Release 2.2.5 (Moore SR5).
+
+
+Changes in version 2.1.16.RELEASE (2020-02-26)
+----------------------------------------------
+* DATAJPA-1676 - Typo in some comments.
+* DATAJPA-1673 - Bulk delete query is invalid.
+* DATAJPA-1665 - Release 2.1.16 (Lovelace SR16).
+
+
+Changes in version 2.3.0.M3 (2020-02-12)
+----------------------------------------
+* DATAJPA-1676 - Typo in some comments.
+* DATAJPA-1673 - Bulk delete query is invalid.
+* DATAJPA-1669 - Release 2.3 M3 (Neumann).
+
+
+Changes in version 2.3.0.M2 (2020-01-17)
+----------------------------------------
+* DATAJPA-1668 - Release 2.3 M2 (Neumann).
+
+
+Changes in version 2.3.0.M1 (2020-01-16)
+----------------------------------------
+* DATAJPA-1663 - Remove PersistenceProvider.potentiallyConvertEmptyCollection(…).
+* DATAJPA-1656 - Update copyright years to 2020.
+* DATAJPA-1652 - Using || (pipes) along with named parameters in custom queries raises an exception.
+* DATAJPA-1647 - JpaRepository memory leak with Pageable argument.
+* DATAJPA-1639 - Fix position of _ in MetaModel classes in the documentation.
+* DATAJPA-1632 - Fix documentation for countQuery.
+* DATAJPA-1631 - Enable building with JDK11+.
+* DATAJPA-1630 - Disable Hibernate 6 build until it is more mature.
+* DATAJPA-1620 - Update versions of Hibernate and Eclipselink.
+* DATAJPA-1619 - Allow repository method parameters of type Iterable for derived IN-queries.
+* DATAJPA-1618 - Fix repository for EclipseLink.
+* DATAJPA-1617 - Fix quotation marks in documentation.
+* DATAJPA-1607 - Release 2.3 M1 (Neumann).
+* DATAJPA-1497 - Allow to add a special parameter type from a Spring Data JPA extension.
+
+
+Changes in version 2.2.4.RELEASE (2020-01-15)
+---------------------------------------------
+* DATAJPA-1663 - Remove PersistenceProvider.potentiallyConvertEmptyCollection(…).
+* DATAJPA-1656 - Update copyright years to 2020.
+* DATAJPA-1652 - Using || (pipes) along with named parameters in custom queries raises an exception.
+* DATAJPA-1647 - JpaRepository memory leak with Pageable argument.
+* DATAJPA-1641 - Release 2.2.4 (Moore SR4).
+
+
+Changes in version 2.1.15.RELEASE (2020-01-15)
+----------------------------------------------
+* DATAJPA-1656 - Update copyright years to 2020.
+* DATAJPA-1652 - Using || (pipes) along with named parameters in custom queries raises an exception.
+* DATAJPA-1640 - Release 2.1.15 (Lovelace SR15).
+
+
+Changes in version 2.2.3.RELEASE (2019-12-04)
+---------------------------------------------
+* DATAJPA-1639 - Fix position of _ in MetaModel classes in the documentation.
+* DATAJPA-1634 - Release 2.2.3 (Moore SR3).
+
+
+Changes in version 2.1.14.RELEASE (2019-12-04)
+----------------------------------------------
+* DATAJPA-1639 - Fix position of _ in MetaModel classes in the documentation.
+* DATAJPA-1633 - Release 2.1.14 (Lovelace SR14).
+
+
+Changes in version 2.2.2.RELEASE (2019-11-18)
+---------------------------------------------
+* DATAJPA-1632 - Fix documentation for countQuery.
+* DATAJPA-1623 - Release 2.2.2 (Moore SR2).
+* DATAJPA-1619 - Allow repository method parameters of type Iterable for derived IN-queries.
+
+
+Changes in version 2.1.13.RELEASE (2019-11-18)
+----------------------------------------------
+* DATAJPA-1632 - Fix documentation for countQuery.
+* DATAJPA-1621 - Release 2.1.13 (Lovelace SR13).
+
+
 Changes in version 2.2.1.RELEASE (2019-11-04)
 ---------------------------------------------
 * DATAJPA-1620 - Update versions of Hibernate and Eclipselink.
@@ -1811,3 +1995,25 @@ Changes in version 1.0.0.M2 (2011-03-24) - https://jira.springsource.org/browse/
 Changes in version 1.0.0.M1 (2011-02-10) - https://jira.springsource.org/browse/DATAJPA/fixforversion/11786
 ----------------------------------------
 * Moved JPA sepcific code from Hades into Spring Data JPA (functional equivalent of Hades 2.0.2) building on common functionality in Spring Data Commons
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
