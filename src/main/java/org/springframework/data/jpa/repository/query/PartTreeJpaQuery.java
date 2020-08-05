@@ -66,7 +66,6 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 	PartTreeJpaQuery(JpaQueryMethod method, EntityManager em) {
 		this(method, em, null, EscapeCharacter.DEFAULT);
 	}
-		}
 	
 	/**
 	 * Creates a new {@link PartTreeJpaQuery}.
