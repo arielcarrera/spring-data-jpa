@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 the original author or authors.
+ * Copyright 2011-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public class SimpleJpaRepositoryUnitTests {
 	@Mock CriteriaQuery<Long> countCriteriaQuery;
 	@Mock TypedQuery<User> query;
 	@Mock TypedQuery<Long> countQuery;
-	@Mock JpaEntityInformation<User, Long> information;
+	@Mock JpaEntityInformation<User, Integer> information;
 	@Mock CrudMethodMetadata metadata;
 	@Mock EntityGraph<User> entityGraph;
 	@Mock org.springframework.data.jpa.repository.EntityGraph entityGraphAnnotation;

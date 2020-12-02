@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2019 the original author or authors.
+ * Copyright 2008-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,7 @@
  */
 package org.springframework.data.jpa.repository.query;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -27,7 +24,6 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.provider.PersistenceProvider;
 import org.springframework.data.jpa.repository.query.JpaParameters.JpaParameter;
 import org.springframework.data.jpa.repository.query.JpaQueryExecution.DeleteExecution;
 import org.springframework.data.jpa.repository.query.JpaQueryExecution.ExistsExecution;
@@ -66,10 +62,9 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 	 *
 	 * @param method must not be {@literal null}.
 	 * @param em must not be {@literal null}.
-	 * @param persistenceProvider must not be {@literal null}.
 	 */
-	PartTreeJpaQuery(JpaQueryMethod method, EntityManager em, PersistenceProvider persistenceProvider) {
-		this(method, em, null, persistenceProvider, EscapeCharacter.DEFAULT);
+	PartTreeJpaQuery(JpaQueryMethod method, EntityManager em) {
+		this(method, em, null, EscapeCharacter.DEFAULT);
 	}
 	
 	/**
@@ -78,10 +73,9 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 	 * @param method must not be {@literal null}.
 	 * @param em must not be {@literal null}.
 	 * @param emCreation if is null uses em
-	 * @param persistenceProvider must not be {@literal null}.
 	 */
-	PartTreeJpaQuery(JpaQueryMethod method, EntityManager em, EntityManager emCreation, PersistenceProvider persistenceProvider) {
-		this(method, em, emCreation, persistenceProvider, EscapeCharacter.DEFAULT);
+	PartTreeJpaQuery(JpaQueryMethod method, EntityManager em, EntityManager emCreation) {
+		this(method, em, emCreation, EscapeCharacter.DEFAULT);
 	}
 
 	/**
@@ -89,11 +83,10 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 	 *
 	 * @param method must not be {@literal null}.
 	 * @param em must not be {@literal null}.
-	 * @param persistenceProvider must not be {@literal null}.
-	 * @param escape
+	 * @param escape character used for escaping characters used as patterns in LIKE-expressions.
 	 */
-	PartTreeJpaQuery(JpaQueryMethod method, EntityManager em, PersistenceProvider persistenceProvider, EscapeCharacter escape) {
-	    this(method, em, null, persistenceProvider, escape);
+	PartTreeJpaQuery(JpaQueryMethod method, EntityManager em, EscapeCharacter escape) {
+		this(method, em, null, escape);
 	}
 	
 	/**
@@ -102,10 +95,9 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 	 * @param method must not be {@literal null}.
 	 * @param em must not be {@literal null}.
 	 * @param emCreation if is null uses em
-	 * @param persistenceProvider must not be {@literal null}.
 	 * @param escape
 	 */
-	PartTreeJpaQuery(JpaQueryMethod method, EntityManager em, EntityManager emCreation, PersistenceProvider persistenceProvider, EscapeCharacter escape) {
+	PartTreeJpaQuery(JpaQueryMethod method, EntityManager em, EntityManager emCreation, EscapeCharacter escape) {
 
 		super(method, em, emCreation);
 
@@ -119,8 +111,8 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 
 			this.tree = new PartTree(method.getName(), domainClass);
 			validate(tree, parameters, method.toString());
-			this.countQuery = new CountQueryPreparer(persistenceProvider, recreationRequired);
-			this.query = tree.isCountProjection() ? countQuery : new QueryPreparer(persistenceProvider, recreationRequired);
+			this.countQuery = new CountQueryPreparer(recreationRequired);
+			this.query = tree.isCountProjection() ? countQuery : new QueryPreparer(recreationRequired);
 
 		} catch (Exception o_O) {
 			throw new IllegalArgumentException(
@@ -211,14 +203,14 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 	}
 
 	private static boolean parameterIsCollectionLike(JpaParameter parameter) {
-		return Collection.class.isAssignableFrom(parameter.getType()) || parameter.getType().isArray();
+		return Iterable.class.isAssignableFrom(parameter.getType()) || parameter.getType().isArray();
 	}
 
 	/**
 	 * Arrays are may be treated as collection like or in the case of binary data as scalar
 	 */
 	private static boolean parameterIsScalarLike(JpaParameter parameter) {
-		return !Collection.class.isAssignableFrom(parameter.getType());
+		return !Iterable.class.isAssignableFrom(parameter.getType());
 	}
 
 	private static boolean expectsCollection(Type type) {
@@ -235,25 +227,18 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 
 		private final @Nullable CriteriaQuery<?> cachedCriteriaQuery;
 		private final @Nullable ParameterBinder cachedParameterBinder;
-		private final @Nullable List<ParameterMetadata<?>> expressions;
-		private final PersistenceProvider persistenceProvider;
-		private final Map<List<ParameterMetadata<?>>, ParameterBinder> binderCache = new ConcurrentHashMap<>();
 		private final QueryParameterSetter.QueryMetadataCache metadataCache = new QueryParameterSetter.QueryMetadataCache();
 
-		QueryPreparer(PersistenceProvider persistenceProvider, boolean recreateQueries) {
+		QueryPreparer(boolean recreateQueries) {
 
-			this.persistenceProvider = persistenceProvider;
-
-			JpaQueryCreator creator = createCreator(persistenceProvider, null);
+			JpaQueryCreator creator = createCreator(null);
 
 			if (recreateQueries) {
 				this.cachedCriteriaQuery = null;
-				this.expressions = null;
 				this.cachedParameterBinder = null;
 			} else {
 				this.cachedCriteriaQuery = creator.createQuery();
-				this.expressions = creator.getParameterExpressions();
-				this.cachedParameterBinder = getBinder(expressions);
+				this.cachedParameterBinder = getBinder(creator.getParameterExpressions());
 			}
 		}
 
@@ -266,7 +251,7 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 			ParameterBinder parameterBinder = cachedParameterBinder;
 
 			if (cachedCriteriaQuery == null || accessor.hasBindableNullValue()) {
-				JpaQueryCreator creator = createCreator(persistenceProvider, accessor);
+				JpaQueryCreator creator = createCreator(accessor);
 				criteriaQuery = creator.createQuery(getDynamicSort(accessor));
 				List<ParameterMetadata<?>> expressions = creator.getParameterExpressions();
 				parameterBinder = getBinder(expressions);
@@ -285,6 +270,7 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 		 * Restricts the max results of the given {@link Query} if the current {@code tree} marks this {@code query} as
 		 * limited.
 		 */
+		@SuppressWarnings("ConstantConditions")
 		private Query restrictMaxResultsIfNecessary(Query query) {
 
 			if (tree.isLimiting()) {
@@ -329,8 +315,7 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 			return getEntityManager().createQuery(criteriaQuery);
 		}
 
-		protected JpaQueryCreator createCreator(PersistenceProvider persistenceProvider,
-				@Nullable JpaParametersParameterAccessor accessor) {
+		protected JpaQueryCreator createCreator(@Nullable JpaParametersParameterAccessor accessor) {
 
 			EntityManager entityManager = getEntityManagerCreation();
 
@@ -341,10 +326,10 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 			ReturnedType returnedType;
 
 			if (accessor != null) {
-				provider = new ParameterMetadataProvider(builder, accessor, persistenceProvider, escape);
+				provider = new ParameterMetadataProvider(builder, accessor, escape);
 				returnedType = processor.withDynamicProjection(accessor).getReturnedType();
 			} else {
-				provider = new ParameterMetadataProvider(builder, parameters, persistenceProvider, escape);
+				provider = new ParameterMetadataProvider(builder, parameters, escape);
 				returnedType = processor.getReturnedType();
 			}
 
@@ -363,8 +348,7 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 		}
 
 		private ParameterBinder getBinder(List<ParameterMetadata<?>> expressions) {
-			return this.binderCache.computeIfAbsent(expressions,
-					key -> ParameterBinderFactory.createCriteriaBinder(parameters, key));
+			return ParameterBinderFactory.createCriteriaBinder(parameters, expressions);
 		}
 
 		private Sort getDynamicSort(JpaParametersParameterAccessor accessor) {
@@ -383,13 +367,12 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 	 */
 	private class CountQueryPreparer extends QueryPreparer {
 
-		CountQueryPreparer(PersistenceProvider persistenceProvider, boolean recreateQueries) {
-			super(persistenceProvider, recreateQueries);
+		CountQueryPreparer(boolean recreateQueries) {
+			super(recreateQueries);
 		}
 
 		@Override
-		protected JpaQueryCreator createCreator(PersistenceProvider persistenceProvider,
-				JpaParametersParameterAccessor accessor) {
+		protected JpaQueryCreator createCreator(@Nullable JpaParametersParameterAccessor accessor) {
 
 			EntityManager entityManager = getEntityManagerCreation();
 			CriteriaBuilder builder = entityManager.getCriteriaBuilder();
@@ -397,9 +380,9 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 			ParameterMetadataProvider provider;
 
 			if (accessor != null) {
-				provider = new ParameterMetadataProvider(builder, accessor, persistenceProvider, escape);
+				provider = new ParameterMetadataProvider(builder, accessor, escape);
 			} else {
-				provider = new ParameterMetadataProvider(builder, parameters, persistenceProvider, escape);
+				provider = new ParameterMetadataProvider(builder, parameters, escape);
 			}
 
 			return new JpaCountQueryCreator(tree, getQueryMethod().getResultProcessor().getReturnedType(), builder, provider);
@@ -407,8 +390,6 @@ public class PartTreeJpaQuery extends AbstractJpaQuery {
 
 		/**
 		 * Customizes binding by skipping the pagination.
-		 *
-		 * @see QueryPreparer#invokeBinding(ParameterBinder, TypedQuery, JpaParametersParameterAccessor)
 		 */
 		@Override
 		protected Query invokeBinding(ParameterBinder binder, TypedQuery<?> query, JpaParametersParameterAccessor accessor,

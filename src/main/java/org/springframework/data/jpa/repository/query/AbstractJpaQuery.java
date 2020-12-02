@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2019 the original author or authors.
+ * Copyright 2008-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -378,7 +378,7 @@ public abstract class AbstractJpaQuery implements RepositoryQuery {
 			 * Otherwise this returns {@code true} even when the value from the backing {@code Tuple} is {@code null}.
 			 *
 			 * @param key the key for which to get the value from the map.
-			 * @return wether the key is an element of the backing tuple.
+			 * @return whether the key is an element of the backing tuple.
 			 */
 			@Override
 			public boolean containsKey(Object key) {

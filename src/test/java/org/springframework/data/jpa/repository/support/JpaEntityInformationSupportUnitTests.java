@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 the original author or authors.
+ * Copyright 2011-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public class JpaEntityInformationSupportUnitTests {
 	@Test
 	public void usesSimpleClassNameIfNoEntityNameGiven() throws Exception {
 
-		JpaEntityInformation<User, Long> information = new DummyJpaEntityInformation<User, Long>(User.class);
+		JpaEntityInformation<User, Integer> information = new DummyJpaEntityInformation<>(User.class);
 		assertThat(information.getEntityName()).isEqualTo("User");
 
 		JpaEntityInformation<NamedUser, ?> second = new DummyJpaEntityInformation<NamedUser, Serializable>(NamedUser.class);
