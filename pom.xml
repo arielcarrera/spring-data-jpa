@@ -3,7 +3,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.springframework.data</groupId>
+	<groupId>com.github.arielcarrera.data</groupId>
 	<artifactId>spring-data-jpa-cdi</artifactId>
 	<version>2.2.1.CDI.1</version>
 
@@ -35,6 +35,16 @@
 	</properties>
 
 	<profiles>
+		<profile>
+			<id>github</id>
+			<distributionManagement>
+			   <repository>
+			     <id>github</id>
+			     <name>GitHub OWNER Apache Maven Packages</name>
+			     <url>https://maven.pkg.github.com/arielcarrera/spring-data-jpa-cdi</url>
+			   </repository>
+			</distributionManagement>
+		</profile>
 		<profile>
 			<id>hibernate-next</id>
 			<properties>
@@ -205,7 +215,7 @@
 			<artifactId>spring-data-commons-cdi</artifactId>
 			<version>${springdata.commons}</version>
 		</dependency>
-
+  
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-orm</artifactId>
